@@ -1,0 +1,37 @@
+@import "tailwindcss";
+
+input[type="password"] {
+    -webkit-text-security: disc;
+}
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
+}
+
+.modal {
+    transition: opacity 1s ease-in-out, visibility 0.3s ease-in-out;
+}
+
+/* .modal-content transition can be added here if needed */
+.modal-content {
+    transition: transform 0.3s ease-in-out;
+}
+
+/* Custom scrollbar for project list */
+.project-list-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.project-list-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.project-list-scrollbar::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
+.project-list-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
