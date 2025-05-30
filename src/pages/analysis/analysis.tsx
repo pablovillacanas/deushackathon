@@ -4,13 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { downloadFileFromAzure, openFileInNewTab } from '@/utils/azureStorage';
 import { TranscriptionAnalysis } from '@/types/analysis';
 import { useProjects } from '@/hooks/useProjects';
+import { useProjectAnalysis } from '@/hooks/useProjectAnalisys';
 
 const Analysis = () => {
 	const { projectUuid } = useParams<{ projectUuid: string }>();
 	const navigate = useNavigate();
-	const { getProjectAnalysis, findProjectById } = useProjects();
-	const [analysisData, setAnalysisData] = useState<TranscriptionAnalysis | null>(null);
-	const [isLoading, setIsLoading] = useState(true);
+	const { findProjectById } = useProjects();
+	const { analysis, isLoading } = useProjectAnalysis(projectUuid);
+	const [analysisData, setAnalysisData] =
+		useState<TranscriptionAnalysis | null>(null);
 	const [error, setError] = useState<string | null>(null);
 	const [isDownloading, setIsDownloading] = useState(false);
 
@@ -40,41 +42,28 @@ const Analysis = () => {
 		const fetchAnalysis = async () => {
 			if (!projectUuid) {
 				setError('Project UUID is required');
-				setIsLoading(false);
 				return;
 			}
 
 			try {
-				setIsLoading(true);
 				setError(null);
-				
+
 				// Check if project exists
 				const project = findProjectById(projectUuid);
 				if (!project) {
 					setError('Project not found');
-					setIsLoading(false);
-					return;
-				}
-
-				// Get analysis data from the hook
-				const analysis = await getProjectAnalysis(projectUuid);
-				if (!analysis) {
-					setError('Analysis not found');
-					setIsLoading(false);
 					return;
 				}
 
 				setAnalysisData(analysis);
-				setIsLoading(false);
 			} catch (err) {
 				setError('Failed to load analysis data');
-				setIsLoading(false);
 				console.error('Error fetching analysis:', err);
 			}
 		};
 
 		fetchAnalysis();
-	}, [projectUuid, findProjectById, getProjectAnalysis]);
+	}, [projectUuid, findProjectById, analysis]);
 
 	if (isLoading) {
 		return (
@@ -207,8 +196,8 @@ const Analysis = () => {
 											onClick={handleDownloadFile}
 											disabled={isDownloading}
 											className={`hover:cursor-pointer flex items-center space-x-2 px-4 py-2 ${
-												isDownloading 
-													? 'bg-gray-400 cursor-not-allowed' 
+												isDownloading
+													? 'bg-gray-400 cursor-not-allowed'
 													: 'bg-indigo-600 hover:bg-indigo-700'
 											} text-white rounded-lg transition duration-150 focus:outline-none focus:ring-2 focus:ring-indigo-500`}
 										>
@@ -286,12 +275,16 @@ const Analysis = () => {
 											className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
 												analysisData.analysis.overall_assessment.score >= 0.8
 													? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-													: analysisData.analysis.overall_assessment.score >= 0.6
+													: analysisData.analysis.overall_assessment.score >=
+													  0.6
 													? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200'
 													: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
 											}`}
 										>
-											{Math.round(analysisData.analysis.overall_assessment.score * 100)}%
+											{Math.round(
+												analysisData.analysis.overall_assessment.score * 100
+											)}
+											%
 										</span>
 									</div>
 								</CardTitle>
@@ -302,21 +295,28 @@ const Analysis = () => {
 										Key Insights
 									</h4>
 									<p className='text-gray-600 dark:text-gray-300 leading-relaxed'>
-										{analysisData.analysis.overall_assessment.key_insights_summary}
+										{
+											analysisData.analysis.overall_assessment
+												.key_insights_summary
+										}
 									</p>
 								</div>
-								
+
 								<div>
 									<h4 className='text-sm font-medium text-gray-900 dark:text-white mb-2'>
 										Areas for Improvement
 									</h4>
 									<ul className='space-y-2'>
-										{analysisData.analysis.overall_assessment.areas_for_improving.map((area, index) => (
-											<li key={index} className='flex items-start space-x-2'>
-												<span className='flex-shrink-0 w-2 h-2 bg-orange-400 rounded-full mt-2'></span>
-												<span className='text-gray-600 dark:text-gray-300 text-sm'>{area}</span>
-											</li>
-										))}
+										{analysisData.analysis.overall_assessment.areas_for_improving.map(
+											(area, index) => (
+												<li key={index} className='flex items-start space-x-2'>
+													<span className='flex-shrink-0 w-2 h-2 bg-orange-400 rounded-full mt-2'></span>
+													<span className='text-gray-600 dark:text-gray-300 text-sm'>
+														{area}
+													</span>
+												</li>
+											)
+										)}
 									</ul>
 								</div>
 							</CardContent>
@@ -356,26 +356,45 @@ const Analysis = () => {
 											Storytelling Coherence
 										</h4>
 										<span className='text-sm font-semibold text-indigo-600 dark:text-indigo-400'>
-											{Math.round(analysisData.analysis.presentation_breakdown.storytelling_coherence.score * 100)}%
+											{Math.round(
+												analysisData.analysis.presentation_breakdown
+													.storytelling_coherence.score * 100
+											)}
+											%
 										</span>
 									</div>
 									<div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2'>
-										<div 
-											className='bg-indigo-600 h-2 rounded-full' 
-											style={{ width: `${analysisData.analysis.presentation_breakdown.storytelling_coherence.score * 100}%` }}
+										<div
+											className='bg-indigo-600 h-2 rounded-full'
+											style={{
+												width: `${
+													analysisData.analysis.presentation_breakdown
+														.storytelling_coherence.score * 100
+												}%`,
+											}}
 										></div>
 									</div>
 									<p className='text-sm text-gray-600 dark:text-gray-300 mb-2'>
-										{analysisData.analysis.presentation_breakdown.storytelling_coherence.assessment}
+										{
+											analysisData.analysis.presentation_breakdown
+												.storytelling_coherence.assessment
+										}
 									</p>
 									<details className='text-sm'>
 										<summary className='text-indigo-600 dark:text-indigo-400 cursor-pointer hover:text-indigo-800 dark:hover:text-indigo-300'>
 											View Suggestions
 										</summary>
 										<ul className='mt-2 space-y-1 ml-4'>
-											{analysisData.analysis.presentation_breakdown.storytelling_coherence.suggestions.map((suggestion, index) => (
-												<li key={index} className='text-gray-600 dark:text-gray-300'>• {suggestion}</li>
-											))}
+											{analysisData.analysis.presentation_breakdown.storytelling_coherence.suggestions.map(
+												(suggestion, index) => (
+													<li
+														key={index}
+														className='text-gray-600 dark:text-gray-300'
+													>
+														• {suggestion}
+													</li>
+												)
+											)}
 										</ul>
 									</details>
 								</div>
@@ -387,26 +406,45 @@ const Analysis = () => {
 											Listener Motivation
 										</h4>
 										<span className='text-sm font-semibold text-purple-600 dark:text-purple-400'>
-											{Math.round(analysisData.analysis.presentation_breakdown.listener_motivation.score * 100)}%
+											{Math.round(
+												analysisData.analysis.presentation_breakdown
+													.listener_motivation.score * 100
+											)}
+											%
 										</span>
 									</div>
 									<div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2'>
-										<div 
-											className='bg-purple-600 h-2 rounded-full' 
-											style={{ width: `${analysisData.analysis.presentation_breakdown.listener_motivation.score * 100}%` }}
+										<div
+											className='bg-purple-600 h-2 rounded-full'
+											style={{
+												width: `${
+													analysisData.analysis.presentation_breakdown
+														.listener_motivation.score * 100
+												}%`,
+											}}
 										></div>
 									</div>
 									<p className='text-sm text-gray-600 dark:text-gray-300 mb-2'>
-										{analysisData.analysis.presentation_breakdown.listener_motivation.assessment}
+										{
+											analysisData.analysis.presentation_breakdown
+												.listener_motivation.assessment
+										}
 									</p>
 									<details className='text-sm'>
 										<summary className='text-purple-600 dark:text-purple-400 cursor-pointer hover:text-purple-800 dark:hover:text-purple-300'>
 											View Suggestions
 										</summary>
 										<ul className='mt-2 space-y-1 ml-4'>
-											{analysisData.analysis.presentation_breakdown.listener_motivation.suggestions.map((suggestion, index) => (
-												<li key={index} className='text-gray-600 dark:text-gray-300'>• {suggestion}</li>
-											))}
+											{analysisData.analysis.presentation_breakdown.listener_motivation.suggestions.map(
+												(suggestion, index) => (
+													<li
+														key={index}
+														className='text-gray-600 dark:text-gray-300'
+													>
+														• {suggestion}
+													</li>
+												)
+											)}
 										</ul>
 									</details>
 								</div>
@@ -424,9 +462,14 @@ const Analysis = () => {
 											</div>
 											<div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 relative'>
 												<div className='absolute inset-0 bg-gradient-to-r from-blue-500 to-green-500 rounded-full'></div>
-												<div 
-													className='absolute w-3 h-3 bg-white border-2 border-gray-400 rounded-full top-[-2px]' 
-													style={{ left: `${analysisData.analysis.presentation_breakdown.tone_of_voice_assessment.formal_vs_casual * 100}%` }}
+												<div
+													className='absolute w-3 h-3 bg-white border-2 border-gray-400 rounded-full top-[-2px]'
+													style={{
+														left: `${
+															analysisData.analysis.presentation_breakdown
+																.tone_of_voice_assessment.formal_vs_casual * 100
+														}%`,
+													}}
 												></div>
 											</div>
 										</div>
@@ -437,9 +480,14 @@ const Analysis = () => {
 											</div>
 											<div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 relative'>
 												<div className='absolute inset-0 bg-gradient-to-r from-gray-500 to-yellow-500 rounded-full'></div>
-												<div 
-													className='absolute w-3 h-3 bg-white border-2 border-gray-400 rounded-full top-[-2px]' 
-													style={{ left: `${analysisData.analysis.presentation_breakdown.tone_of_voice_assessment.serious_vs_funny * 100}%` }}
+												<div
+													className='absolute w-3 h-3 bg-white border-2 border-gray-400 rounded-full top-[-2px]'
+													style={{
+														left: `${
+															analysisData.analysis.presentation_breakdown
+																.tone_of_voice_assessment.serious_vs_funny * 100
+														}%`,
+													}}
 												></div>
 											</div>
 										</div>
@@ -450,9 +498,15 @@ const Analysis = () => {
 											</div>
 											<div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 relative'>
 												<div className='absolute inset-0 bg-gradient-to-r from-green-500 to-red-500 rounded-full'></div>
-												<div 
-													className='absolute w-3 h-3 bg-white border-2 border-gray-400 rounded-full top-[-2px]' 
-													style={{ left: `${analysisData.analysis.presentation_breakdown.tone_of_voice_assessment.respectful_vs_irreverent * 100}%` }}
+												<div
+													className='absolute w-3 h-3 bg-white border-2 border-gray-400 rounded-full top-[-2px]'
+													style={{
+														left: `${
+															analysisData.analysis.presentation_breakdown
+																.tone_of_voice_assessment
+																.respectful_vs_irreverent * 100
+														}%`,
+													}}
 												></div>
 											</div>
 										</div>
@@ -463,9 +517,15 @@ const Analysis = () => {
 											</div>
 											<div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 relative'>
 												<div className='absolute inset-0 bg-gradient-to-r from-blue-500 to-orange-500 rounded-full'></div>
-												<div 
-													className='absolute w-3 h-3 bg-white border-2 border-gray-400 rounded-full top-[-2px]' 
-													style={{ left: `${analysisData.analysis.presentation_breakdown.tone_of_voice_assessment.matter_of_fact_vs_enthusiastic * 100}%` }}
+												<div
+													className='absolute w-3 h-3 bg-white border-2 border-gray-400 rounded-full top-[-2px]'
+													style={{
+														left: `${
+															analysisData.analysis.presentation_breakdown
+																.tone_of_voice_assessment
+																.matter_of_fact_vs_enthusiastic * 100
+														}%`,
+													}}
 												></div>
 											</div>
 										</div>
@@ -479,26 +539,45 @@ const Analysis = () => {
 											Closing Statement Engagement
 										</h4>
 										<span className='text-sm font-semibold text-green-600 dark:text-green-400'>
-											{Math.round(analysisData.analysis.presentation_breakdown.closing_statement_engagement.score * 100)}%
+											{Math.round(
+												analysisData.analysis.presentation_breakdown
+													.closing_statement_engagement.score * 100
+											)}
+											%
 										</span>
 									</div>
 									<div className='w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 mb-2'>
-										<div 
-											className='bg-green-600 h-2 rounded-full' 
-											style={{ width: `${analysisData.analysis.presentation_breakdown.closing_statement_engagement.score * 100}%` }}
+										<div
+											className='bg-green-600 h-2 rounded-full'
+											style={{
+												width: `${
+													analysisData.analysis.presentation_breakdown
+														.closing_statement_engagement.score * 100
+												}%`,
+											}}
 										></div>
 									</div>
 									<p className='text-sm text-gray-600 dark:text-gray-300 mb-2'>
-										{analysisData.analysis.presentation_breakdown.closing_statement_engagement.assessment}
+										{
+											analysisData.analysis.presentation_breakdown
+												.closing_statement_engagement.assessment
+										}
 									</p>
 									<details className='text-sm'>
 										<summary className='text-green-600 dark:text-green-400 cursor-pointer hover:text-green-800 dark:hover:text-green-300'>
 											View Suggestions
 										</summary>
 										<ul className='mt-2 space-y-1 ml-4'>
-											{analysisData.analysis.presentation_breakdown.closing_statement_engagement.suggestions.map((suggestion, index) => (
-												<li key={index} className='text-gray-600 dark:text-gray-300'>• {suggestion}</li>
-											))}
+											{analysisData.analysis.presentation_breakdown.closing_statement_engagement.suggestions.map(
+												(suggestion, index) => (
+													<li
+														key={index}
+														className='text-gray-600 dark:text-gray-300'
+													>
+														• {suggestion}
+													</li>
+												)
+											)}
 										</ul>
 									</details>
 								</div>
@@ -516,32 +595,40 @@ const Analysis = () => {
 										Most Frequent Keywords
 									</h4>
 									<div className='flex flex-wrap gap-2'>
-										{analysisData.analysis.presentation_breakdown.overused_elements.keywords.map((keyword, index) => (
-											<span 
-												key={index} 
-												className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
-											>
-												{keyword.word} 
-												<span className='ml-1 text-xs font-semibold'>({keyword.count})</span>
-											</span>
-										))}
+										{analysisData.analysis.presentation_breakdown.overused_elements.keywords.map(
+											(keyword, index) => (
+												<span
+													key={index}
+													className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
+												>
+													{keyword.word}
+													<span className='ml-1 text-xs font-semibold'>
+														({keyword.count})
+													</span>
+												</span>
+											)
+										)}
 									</div>
 								</div>
-								
+
 								<div>
 									<h4 className='text-sm font-medium text-gray-900 dark:text-white mb-3'>
 										Repeated Expressions
 									</h4>
 									<div className='flex flex-wrap gap-2'>
-										{analysisData.analysis.presentation_breakdown.overused_elements.expressions.map((expression, index) => (
-											<span 
-												key={index} 
-												className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
-											>
-												"{expression.expression}" 
-												<span className='ml-1 text-xs font-semibold'>({expression.count})</span>
-											</span>
-										))}
+										{analysisData.analysis.presentation_breakdown.overused_elements.expressions.map(
+											(expression, index) => (
+												<span
+													key={index}
+													className='inline-flex items-center px-3 py-1 rounded-full text-sm bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200'
+												>
+													"{expression.expression}"
+													<span className='ml-1 text-xs font-semibold'>
+														({expression.count})
+													</span>
+												</span>
+											)
+										)}
 									</div>
 								</div>
 
@@ -550,12 +637,16 @@ const Analysis = () => {
 										Improvement Suggestions
 									</h4>
 									<ul className='space-y-2'>
-										{analysisData.analysis.presentation_breakdown.overused_elements.suggestions.map((suggestion, index) => (
-											<li key={index} className='flex items-start space-x-2'>
-												<span className='flex-shrink-0 w-2 h-2 bg-blue-400 rounded-full mt-2'></span>
-												<span className='text-gray-600 dark:text-gray-300 text-sm'>{suggestion}</span>
-											</li>
-										))}
+										{analysisData.analysis.presentation_breakdown.overused_elements.suggestions.map(
+											(suggestion, index) => (
+												<li key={index} className='flex items-start space-x-2'>
+													<span className='flex-shrink-0 w-2 h-2 bg-blue-400 rounded-full mt-2'></span>
+													<span className='text-gray-600 dark:text-gray-300 text-sm'>
+														{suggestion}
+													</span>
+												</li>
+											)
+										)}
 									</ul>
 								</div>
 							</CardContent>
@@ -572,27 +663,35 @@ const Analysis = () => {
 										Identified Emotions
 									</h4>
 									<div className='space-y-3'>
-										{analysisData.analysis.emotional_analysis.identified_emotions.map((emotion, index) => (
-											<div key={index} className='border border-gray-200 dark:border-gray-700 rounded-lg p-3'>
-												<div className='flex items-center space-x-2 mb-2'>
-													<span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'>
-														{emotion.emotion}
-													</span>
+										{analysisData.analysis.emotional_analysis.identified_emotions.map(
+											(emotion, index) => (
+												<div
+													key={index}
+													className='border border-gray-200 dark:border-gray-700 rounded-lg p-3'
+												>
+													<div className='flex items-center space-x-2 mb-2'>
+														<span className='inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'>
+															{emotion.emotion}
+														</span>
+													</div>
+													<blockquote className='text-sm text-gray-600 dark:text-gray-300 italic border-l-4 border-blue-300 pl-3'>
+														"{emotion.quotes}"
+													</blockquote>
 												</div>
-												<blockquote className='text-sm text-gray-600 dark:text-gray-300 italic border-l-4 border-blue-300 pl-3'>
-													"{emotion.quotes}"
-												</blockquote>
-											</div>
-										))}
+											)
+										)}
 									</div>
 								</div>
-								
+
 								<div>
 									<h4 className='text-sm font-medium text-gray-900 dark:text-white mb-2'>
 										Overall Emotional Arc
 									</h4>
 									<p className='text-gray-600 dark:text-gray-300 leading-relaxed text-sm'>
-										{analysisData.analysis.emotional_analysis.overall_emotional_arc}
+										{
+											analysisData.analysis.emotional_analysis
+												.overall_emotional_arc
+										}
 									</p>
 								</div>
 							</CardContent>
@@ -604,9 +703,15 @@ const Analysis = () => {
 								<CardTitle className='flex items-center justify-between'>
 									<span>Full Transcription</span>
 									<div className='flex items-center space-x-4 text-xs text-gray-500 dark:text-gray-400'>
-										<span>Duration: {Math.round(analysisData.transcript.durationMilliseconds / 1000 / 60)} min</span>
+										<span>
+											Duration:{' '}
+											{Math.round(
+												analysisData.transcript.durationMilliseconds / 1000 / 60
+											)}{' '}
+											min
+										</span>
 										<span>Locale: {analysisData.transcript.locale}</span>
-										<span 
+										<span
 											className={`px-2 py-1 rounded-full ${
 												analysisData.transcript.confidence >= 0.8
 													? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
@@ -615,7 +720,8 @@ const Analysis = () => {
 													: 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200'
 											}`}
 										>
-											Confidence: {Math.round(analysisData.transcript.confidence * 100)}%
+											Confidence:{' '}
+											{Math.round(analysisData.transcript.confidence * 100)}%
 										</span>
 									</div>
 								</CardTitle>
