@@ -247,11 +247,11 @@ export const NewProjectModal = ({ isOpen, onClose, onAddProject }: Props) => {
 
 	return (
 		<div
-			className='modal fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full flex items-center justify-center p-4'
+			className='modal fixed inset-0 bg-gray-600 bg-opacity-60 overflow-y-auto h-full w-full flex items-center justify-center p-4'
 			onClick={onClose} // Close on backdrop click
 		>
 			<div
-				className='modal-content bg-white p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-in-out scale-100'
+				className='modal-content bg-white bg-opacity-95 backdrop-blur-sm p-6 sm:p-8 rounded-xl shadow-2xl w-full max-w-lg transform transition-all duration-300 ease-in-out scale-100'
 				onClick={(e) => e.stopPropagation()} // Prevent closing when clicking inside modal content
 			>
 				<div className='flex justify-between items-center mb-6'>
