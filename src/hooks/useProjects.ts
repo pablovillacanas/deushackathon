@@ -19,18 +19,18 @@ export type CreateProjectData = {
 // Mock data - in a real app this would come from an API
 const initialMockProjects: Project[] = [
 	{
-		uuid: 'd0c2f240-48c7-4caa-b65b-4cefea988f0c',
-		projectName: 'Jennie Bad',
+		uuid: 'd0c2f240-48c7-4caa-b65b-4cefea988f0a',
+		projectName: 'Jennie Good',
 		context: 'Webinar introducing DEUS',
-		fileKey: 'Jennie-Bad.mp4',
+		fileKey: 'Jennie-Good.mp4',
 		createdAt: '2024-01-05',
 		status: 'COMPLETED',
 	},
 	{
 		uuid: 'd0c2f240-48c7-4caa-b65b-4cefea988f0c',
-		projectName: 'Jennie Good',
+		projectName: 'Jennie Bad',
 		context: 'Webinar introducing DEUS',
-		fileKey: 'Jennie-Good.mp4',
+		fileKey: 'Jennie-Bad.mp4',
 		createdAt: '2024-01-05',
 		status: 'COMPLETED',
 	},

@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { TranscriptionAnalysis } from '@/types/analysis';
 
 const mockGood = {
-	"id": "d0c2f240-48c7-4caa-b65b-4cefea988f0c",
+	"id": "d0c2f240-48c7-4caa-b65b-4cefea988f0a",
 	"projectName": "Jennie Good",
 	"fileKey": "1748614755132_First Take - Jennie Bad.mp3",
 	"context": "test context",
@@ -13,11 +13,12 @@ const mockGood = {
 		"confidence": 0.9181230499999999
 	},
 	"keyPoints": [
-		"Simulated AI analysis based on context 'test context': The transcript mentions key performance indicators and action items for the next sprint."
+		"Focus fully on the speaker.",
+		"Use of simple, direct language."
 	],
 	"analysis": {
 		"overall_assessment": {
-			"score": 0.65,
+			"score": 0.96,
 			"key_insights_summary": "The presentation communicates a passionate mission and introduces the company's services, but suffers from disfluencies, repetition, and lack of structure.",
 			"areas_for_improving": [
 				"Improve fluency and reduce filler words and hesitations.",
@@ -27,7 +28,7 @@ const mockGood = {
 		},
 		"presentation_breakdown": {
 			"storytelling_coherence": {
-				"score": 0.6,
+				"score": 0.9,
 				"assessment": "The message is scattered, with repetition and interruptions affecting clarity. The narrative lacks a smooth, logical progression.",
 				"suggestions": [
 					"Create a structured outline before speaking.",
@@ -36,7 +37,7 @@ const mockGood = {
 				]
 			},
 			"listener_motivation": {
-				"score": 0.7,
+				"score": 0.9,
 				"assessment": "The enthusiasm and ethical mission could inspire listeners, but the lack of polish may reduce the perceived authority.",
 				"suggestions": [
 					"Deliver key ideas with stronger emphasis and clarity.",
@@ -133,7 +134,7 @@ const mockGood = {
 }
 
 const mockBad = {
-	"id": "764962c9-387f-4e85-9b2f-49c61b193116",
+	"id": "d0c2f240-48c7-4caa-b65b-4cefea988f0c",
 	"projectName": "Jennie Bad",
 	"fileKey": "1748614834652_First Take - Jennie Good.mp3",
 	"context": "test context",
